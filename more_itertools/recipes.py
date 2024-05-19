@@ -8,6 +8,7 @@ Some backward-compatible usability improvements have been made.
 
 """
 
+import itertools
 import math
 import operator
 
@@ -67,6 +68,7 @@ __all__ = [
     'roundrobin',
     'sieve',
     'sliding_window',
+    'cycled_sliding_window',
     'subslices',
     'sum_of_squares',
     'tabulate',
@@ -796,6 +798,30 @@ def sliding_window(iterable, n):
     window = deque(islice(it, n - 1), maxlen=n)
     for x in it:
         window.append(x)
+        yield tuple(window)
+
+
+def cycled_sliding_window(iterable, n):
+    """Return a sliding window of width *n* over the cycled *iterable* so that each item in the iterable appears exactly once as the 0th item in the window.
+
+        >>> list(cycled_sliding_window(range(6), 4))
+        [(0, 1, 2, 3), (1, 2, 3, 4), (2, 3, 4, 5), (3, 4, 5, 0), (4, 5, 0, 1), (5, 0, 1, 2)]
+
+    If *iterable* has fewer than *n* items, the window wraps around the iterable as many times as is required:
+
+        >>> list(cycled_sliding_window(range(3), 7))
+        [(0, 1, 2, 0, 1, 2, 0), (1, 2, 0, 1, 2, 0, 1), (2, 0, 1, 2, 0, 1, 2)]
+
+
+    See also :func:`sliding_window`.
+    """
+    it = iter(iterable)
+    it0, it1 = itertools.tee(it)
+    cycle = itertools.cycle(it1)
+
+    window = deque(islice(cycle, n - 1), maxlen=n)
+    for _, item in zip(it0, cycle):
+        window.append(item)
         yield tuple(window)
 
 

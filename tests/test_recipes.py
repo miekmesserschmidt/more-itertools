@@ -9,6 +9,7 @@ from sys import version_info
 from unittest import TestCase, skipIf
 
 import more_itertools as mi
+from more_itertools import recipes
 
 
 def load_tests(loader, tests, ignore):
@@ -841,6 +842,52 @@ class SlidingWindowTests(TestCase):
         ]:
             with self.subTest(expected=expected):
                 actual = list(mi.sliding_window(iterable, n))
+                self.assertEqual(actual, expected)
+
+
+class CycledSlidingWindowTests(TestCase):
+    def test_basic(self):
+        for iterable, n, expected in [
+            ([], 1, []),
+            ([0], 1, [(0,)]),
+            ([0, 1], 1, [(0,), (1,)]),
+            ([0, 1, 2], 2, [(0, 1), (1, 2), (2, 0)]),
+            (
+                [0, 1, 2],
+                3,
+                [(0, 1, 2), (1, 2, 0), (2, 0, 1)],
+            ),
+            ([0, 1, 2], 4, [(0, 1, 2, 0), (1, 2, 0, 1), (2, 0, 1, 2)]),
+            (
+                [0, 1, 2, 3],
+                4,
+                [(0, 1, 2, 3), (1, 2, 3, 0), (2, 3, 0, 1), (3, 0, 1, 2)],
+            ),
+            (
+                [0, 1, 2, 3, 4],
+                4,
+                [
+                    (0, 1, 2, 3),
+                    (1, 2, 3, 4),
+                    (2, 3, 4, 0),
+                    (3, 4, 0, 1),
+                    (4, 0, 1, 2),
+                ],
+            ),
+            (
+                [0, 1, 2, 3, 4],
+                7,
+                [
+                    (0, 1, 2, 3, 4, 0, 1),
+                    (1, 2, 3, 4, 0, 1, 2),
+                    (2, 3, 4, 0, 1, 2, 3),
+                    (3, 4, 0, 1, 2, 3, 4),
+                    (4, 0, 1, 2, 3, 4, 0),
+                ],
+            ),
+        ]:
+            with self.subTest(expected=expected):
+                actual = list(mi.cycled_sliding_window(iterable, n))
                 self.assertEqual(actual, expected)
 
 
